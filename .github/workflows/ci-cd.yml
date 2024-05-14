@@ -1,38 +1,28 @@
-name: CI/CD
+name: Expo CI CD
 
 on:
-  push:
-    branches:
-      - main
+  push :
+    branches : [release]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  Build-for-android:
+    runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
         with:
-          node-version: '14'
-
-      - name: Install dependencies
-        run: |
-          npm install -g expo-cli
-          npm install
-
-      - name: Run tests
-        run: |
-          expo test
-
-      - name: Build Expo project
-        run: |
-          expo build:android --type apk --release-channel=main
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+          node-version: 12.x
+      - uses: actions/setup-java@v1.4.3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./android/app/build/outputs/apk/release
+          java-version: '9.0.4' # The JDK version to make available on the path.
+          java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
+          architecture: x64 # (x64 or x86) - defaults to x64
+      - uses: expo/expo-github-action@v5
+        with:
+          expo-version: 3.x
+          expo-username: ${{ secrets.EXPO_CLI_USERNAME }}
+          expo-password: ${{ secrets.EXPO_CLI_PASSWORD }}
+      - name: Install deps
+        run: yarn install
+      - name: Build Android APK Bundle
+        run: expo build:android
